@@ -232,7 +232,7 @@
 			if(${article.channelId!=null}){
 				location = "/index?pageNum="+pageNum+"&channelId="+'${article.channelId}'+"&categoryId="+categoryId;
 			}else{
-				location = "/index?pageNum="+pageNum;
+				location = "/index?pageNum="+pageNum+"&key=${key}";
 			}
 			
 		}

@@ -20,4 +20,10 @@ public interface ArticleService {
 
 	boolean insertSelective(ArticleWithBLOBs article);
 
+	PageInfo<Article> selectLast(Article lastArticle, Integer pageNum, Integer pageSize);
+
+	PageInfo<Article> selectHot(Article hot, Integer pageNum, Integer pageSize);
+
+	PageInfo<Article> selectES(Integer pageNum, Integer pageSize, String key);
+
 }

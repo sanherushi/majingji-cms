@@ -65,7 +65,7 @@ public class IndexController {
 	private CommentService commentService;
 	
 	@RequestMapping(value = {"","/","index"})
-	public String index(Article article,Model model,@RequestParam(defaultValue = "1")Integer pageNum,@RequestParam(defaultValue = "5")Integer pageSize) {
+	public String index(Article article,Model model,@RequestParam(defaultValue = "1")Integer pageNum,@RequestParam(defaultValue = "5")Integer pageSize,String key) {
 		long s1 = System.currentTimeMillis();
 		System.out.println(article.getChannelId()+"---------------");
 		
@@ -93,17 +93,27 @@ public class IndexController {
 		//t2线程用于显示热门文章
 		t2 = new Thread(new Runnable() {
 			public void run() {
-				//如果没有栏目,默认选择热门文章
-				if(null ==article.getChannelId()) {
-					Article hot = new Article();
-					hot.setStatus(1);//1表示审核过
-					hot.setDeleted(0);//0表示没有被删除
-					hot.setHot(1);//1表示是热门文章
-					hot.setContentType(ArticleEnum.HTML.getCode());//0表示是文章,1表示是图片集
-					//查询出全部的热门文章
-					PageInfo<Article> info = articleService.selects(hot, pageNum, pageSize);
-					model.addAttribute("nums", info.getNavigatepageNums());
+				if(key!=null && !key.trim().equals("")) {
+					//如果搜索条件不为空，则查询es，进行高亮显示
+					PageInfo<Article> info = articleService.selectES(pageNum, pageSize,key);
+					System.out.println(info+"------------------------高亮数据");
 					model.addAttribute("page", info);
+					model.addAttribute("nums", info.getNavigatepageNums());
+					model.addAttribute("key", key);
+				}else {
+					//如果没有栏目,默认选择热门文章
+					if(null ==article.getChannelId()) {
+						Article hot = new Article();
+						hot.setStatus(1);//1表示审核过
+						hot.setDeleted(0);//0表示没有被删除
+						hot.setHot(1);//1表示是热门文章
+						hot.setContentType(ArticleEnum.HTML.getCode());//0表示是文章,1表示是图片集
+						//查询出全部的热门文章
+						//PageInfo<Article> info = articleService.selects(hot, pageNum, pageSize);
+						PageInfo<Article> info = articleService.selectHot(hot,pageNum,pageSize);
+						model.addAttribute("nums", info.getNavigatepageNums());
+						model.addAttribute("page", info);
+					}
 				}
 				
 			}
@@ -134,7 +144,8 @@ public class IndexController {
 				lastArticle.setDeleted(0);
 				lastArticle.setContentType(ArticleEnum.HTML.getCode());//显示文章
 				//把当前页和每页的记录数先写死,保证不管怎么分页最新的5篇文章都不会改变
-				PageInfo<Article> lastInfo = articleService.selects(lastArticle, 1, 5);
+				//PageInfo<Article> lastInfo = articleService.selects(lastArticle, 1, 5);
+				PageInfo<Article> lastInfo = articleService.selectLast(lastArticle,1,5);
 				model.addAttribute("lastInfo", lastInfo);
 				
 			}

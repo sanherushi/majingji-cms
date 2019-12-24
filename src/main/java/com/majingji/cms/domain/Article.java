@@ -3,9 +3,14 @@ package com.majingji.cms.domain;
 import java.io.Serializable;
 import java.util.Date;
 
+import org.springframework.data.annotation.Id;
+import org.springframework.data.elasticsearch.annotations.Document;
+import org.springframework.data.elasticsearch.annotations.Field;
+@Document(indexName = "cms",type = "article")
 public class Article implements Serializable {
+	@Id
     private Integer id;
-
+	@Field(index=true,analyzer="ik_smart",searchAnalyzer="ik_smart",store=true)
     private String title;
 
     private String picture;

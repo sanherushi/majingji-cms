@@ -6,12 +6,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <!-- Bootstrap -->
 <link rel="stylesheet" type="text/css"
-	href="/resource/css/bootstrap.min.css" />
+	href="${pageContext.request.contextPath }/resource/css/bootstrap.min.css" />
 
 <link rel="stylesheet" type="text/css"
-	href="/resource/css/cms.css?v=1.1" />
+	href="${pageContext.request.contextPath }/resource/css/cms.css?v=1.1" />
 	<link rel="stylesheet" type="text/css"
-	href="/resource/css/jquery/screen.css" />
+	href="${pageContext.request.contextPath }/resource/css/jquery/screen.css" />
 
 	
 <div class="container-fulid">
@@ -24,7 +24,7 @@
 			<div class="input-group">
 				<input type="text" name="key" class="form-control"
 					placeholder="输入关键字..." aria-label="key"
-					aria-describedby="basic-addon1">
+					aria-describedby="basic-addon1" value="${key }">
 				<div class="input-group-prepend">
 					<button class="input-group-btn btn btn-outline-primary"
 						id="basic-addon1">搜索</button>
