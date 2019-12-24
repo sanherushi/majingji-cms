@@ -3,11 +3,15 @@ package com.majingji.cms.controller;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -63,7 +67,10 @@ public class IndexController {
 	private CollectService collectService;
 	@Resource
 	private CommentService commentService;
-	
+	@Resource
+	private ThreadPoolTaskExecutor executor;
+	@Resource
+	private RedisTemplate redisTemplate;
 	@RequestMapping(value = {"","/","index"})
 	public String index(Article article,Model model,@RequestParam(defaultValue = "1")Integer pageNum,@RequestParam(defaultValue = "5")Integer pageSize,String key) {
 		long s1 = System.currentTimeMillis();
@@ -208,6 +215,27 @@ public class IndexController {
 	
 	@RequestMapping("article")
 	public String article(Model model,@RequestParam(defaultValue = "1")Integer pageNum,@RequestParam(defaultValue = "3")Integer pageSize,Integer id,HttpServletRequest request) {
+		//获取用户id
+		String addr = request.getRemoteAddr();
+		//拼接key
+		String key = "Hits_"+id+"_"+addr;
+		//Redis判断
+		if(!redisTemplate.hasKey(key)) {
+			ValueOperations opsForValue = redisTemplate.opsForValue();
+			//redis写入并设定有效时长
+			opsForValue.set(key, null, 5, TimeUnit.MINUTES);
+			executor.execute(new Runnable() {
+				//异步执行数据库加1
+				public void run() {
+					ArticleWithBLOBs article = articleService.selectByPrimaryKey(id);
+					//点击量+1
+					article.setHits(article.getHits()+1);
+					//修改点击量
+					articleService.update(article);
+				}
+				
+			});
+		}
 		ArticleWithBLOBs article = articleService.selectByPrimaryKey(id);
 		PageInfo<Comment> commentInfo = commentService.selects(article.getId(),pageNum,pageSize);
 		HttpSession session = request.getSession(false);

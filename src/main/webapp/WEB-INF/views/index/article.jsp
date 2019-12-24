@@ -34,6 +34,7 @@
 						href="javascript:collect()">☆ (未收藏)</a>
 					</span>
 				</c:if>
+				<span style="font-size: 20px; color: blue;">点击量:${article.hits }</span>
 			</dd>
 
 			<dd>
